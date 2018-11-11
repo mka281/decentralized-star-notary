@@ -6,6 +6,10 @@ contract StarNotary is ERC721 {
 
     struct Star { 
         string name; 
+        string ra;
+        string dec;
+        string mag;
+        string story;
     }
 
     mapping(uint256 => Star) public tokenIdToStarInfo; 
