@@ -2,8 +2,7 @@ pragma solidity ^0.4.23;
 
 import "../node_modules/openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 
-contract StarNotary is ERC721 { 
-
+contract StarNotary is ERC721 {
     struct Star { 
         string name; 
         string ra;
@@ -26,30 +25,39 @@ contract StarNotary is ERC721 {
             createdStars[newStarHash] = true;	
         }
 
-        // Mint token to star creator address
+        // Mint token and send it to star creator address
         _mint(msg.sender, _tokenId);
     }
 
     function putStarUpForSale(uint256 _tokenId, uint256 _price) public { 
+        // Only star owner can call this function
         require(this.ownerOf(_tokenId) == msg.sender);
 
+        // Set star price
         starsForSale[_tokenId] = _price;
     }
 
     function buyStar(uint256 _tokenId) public payable { 
+        // Verify if the star is for sale
         require(starsForSale[_tokenId] > 0);
         
+        // Verify if the amount is enough
         uint256 starCost = starsForSale[_tokenId];
-        address starOwner = this.ownerOf(_tokenId);
         require(msg.value >= starCost);
 
+        // Transfer token and cost
+        address starOwner = this.ownerOf(_tokenId);
         _removeTokenFrom(starOwner, _tokenId);
         _addTokenTo(msg.sender, _tokenId);
-        
         starOwner.transfer(starCost);
 
+        // If there is more value than the cost, return it to buyer
         if(msg.value > starCost) { 
             msg.sender.transfer(msg.value - starCost);
         }
+
+        // Take the star off the sale list
+        starsForSale[_tokenId] = false;
     }
+  }
 }
