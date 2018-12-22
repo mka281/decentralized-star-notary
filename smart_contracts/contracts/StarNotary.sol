@@ -5,18 +5,19 @@ import "../node_modules/openzeppelin-solidity/contracts/token/ERC721/ERC721.sol"
 contract StarNotary is ERC721 {
     struct Star { 
         string name; 
+        string starStory;
         string ra;
         string dec;
         string mag;
-        string starStory;
     }
 
     mapping(uint256 => Star) public tokenIdToStarInfo; 
     mapping(bytes32 => bool) public createdStars;
     mapping(uint256 => uint256) public starsForSale;
 
-    function createStar(string memory _name, string memory _ra, string memory _dec, string memory _mag, string memory _starStory, uint256 _tokenId) public {
-        Star memory newStar = Star(_name, _ra, _dec, _mag, _starStory);
+    function createStar(string memory _name, string memory _starStory, string memory _ra, string memory _dec, string memory _mag, uint256 _tokenId) public {
+        require(checkIfStarExist(_ra, _dec, _mag) == false, "Star is already created for these coordinates");
+        Star memory newStar = Star(_name, _starStory, _ra, _dec, _mag);
         bytes32 newStarHash = keccak256(abi.encodePacked(_ra, _dec, _mag));
 
         // If start is not created before, save newStar and newStarHash
@@ -58,5 +59,9 @@ contract StarNotary is ERC721 {
 
         // Take the star off the sale list
         delete(starsForSale[_tokenId]);
+    }
+
+    function checkIfStarExist(string memory _ra, string memory _dec, string memory _mag) public view returns (bool) {
+        return createdStars[keccak256(abi.encodePacked(_ra, _dec, _mag))];
     }
 }
