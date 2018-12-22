@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.5.0;
 
 import "../node_modules/openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 
@@ -15,9 +15,9 @@ contract StarNotary is ERC721 {
     mapping(bytes32 => bool) public createdStars;
     mapping(uint256 => uint256) public starsForSale;
 
-    function createStar(string _name, string _ra, string _dec, string _mag, string _starStory, uint256 _tokenId) public {
+    function createStar(string memory _name, string memory _ra, string memory _dec, string memory _mag, string memory _starStory, uint256 _tokenId) public {
         Star memory newStar = Star(_name, _ra, _dec, _mag, _starStory);
-        String memory newStarHash = keccak256(abi.encodePacked(_ra, _dec, _mag));
+        bytes32 newStarHash = keccak256(abi.encodePacked(_ra, _dec, _mag));
 
         // If start is not created before, save newStar and newStarHash
         if (createdStars[newStarHash] != true) {
@@ -46,7 +46,7 @@ contract StarNotary is ERC721 {
         require(msg.value >= starCost);
 
         // Transfer token and cost
-        address starOwner = this.ownerOf(_tokenId);
+        address payable starOwner = address(uint160(bytes20(this.ownerOf(_tokenId))));
         _removeTokenFrom(starOwner, _tokenId);
         _addTokenTo(msg.sender, _tokenId);
         starOwner.transfer(starCost);
@@ -57,7 +57,6 @@ contract StarNotary is ERC721 {
         }
 
         // Take the star off the sale list
-        starsForSale[_tokenId] = false;
+        delete(starsForSale[_tokenId]);
     }
-  }
 }
