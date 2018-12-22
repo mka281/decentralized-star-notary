@@ -9,17 +9,24 @@ contract StarNotary is ERC721 {
         string ra;
         string dec;
         string mag;
-        string story;
+        string starStory;
     }
 
     mapping(uint256 => Star) public tokenIdToStarInfo; 
+    mapping(bytes32 => bool) public createdStars;
     mapping(uint256 => uint256) public starsForSale;
 
-    function createStar(string _name, uint256 _tokenId) public { 
-        Star memory newStar = Star(_name);
+    function createStar(string _name, string _ra, string _dec, string _mag, string _starStory, uint256 _tokenId) public {
+        Star memory newStar = Star(_name, _ra, _dec, _mag, _starStory);
+        String memory newStarHash = keccak256(abi.encodePacked(_ra, _dec, _mag));
 
-        tokenIdToStarInfo[_tokenId] = newStar;
+        // If start is not created before, save newStar and newStarHash
+        if (createdStars[newStarHash] != true) {
+            tokenIdToStarInfo[_tokenId] = newStar;
+            createdStars[newStarHash] = true;	
+        }
 
+        // Mint token to star creator address
         _mint(msg.sender, _tokenId);
     }
 
